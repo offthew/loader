@@ -1,23 +1,26 @@
 #pragma once
 #include <memory>
-#include <spdlog/logger.h>
+#include <spdlog/spdlog.h>
 
-namespace chalchiu
+namespace loader
 {
     class logger
     {
-        static std::unique_ptr<logger> m_instance;
+        struct impl;
 
       private:
-        std::unique_ptr<spdlog::logger> m_logger;
+        std::unique_ptr<impl> m_impl;
 
       private:
         logger();
 
       public:
-        spdlog::logger *operator->();
+        ~logger();
+
+      public:
+        spdlog::logger *operator->() const;
 
       public:
         static logger &get();
     };
-} // namespace chalchiu
+} // namespace loader

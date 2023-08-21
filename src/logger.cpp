@@ -1,36 +1,46 @@
 #include "logger.hpp"
+#include "spdlog/common.h"
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-namespace chalchiu
+namespace loader
 {
-    std::unique_ptr<logger> logger::m_instance;
-
-    logger::logger()
+    struct logger::impl
     {
-        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("chalchiu.log");
+        std::shared_ptr<spdlog::logger> logger;
+    };
 
-        spdlog::sinks_init_list sink_list{console_sink, file_sink};
-        m_logger = std::make_unique<spdlog::logger>("chalchiu", sink_list);
+    logger::logger() : m_impl(std::make_unique<impl>())
+    {
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("coromodloader.log");
+        auto ansi_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
-        m_logger->flush_on(spdlog::level::trace);
-        m_logger->set_level(spdlog::level::trace);
+        auto sinks = spdlog::sinks_init_list{file_sink, ansi_sink};
+
+        m_impl->logger = std::make_shared<spdlog::logger>("CoroModLoader", sinks);
+        m_impl->logger->set_pattern("%Y-%m-%d %T [%n] %^[%-5!l]%$ %6v");
+
+        m_impl->logger->set_level(spdlog::level::trace);
+        m_impl->logger->flush_on(spdlog::level::trace);
     }
 
-    spdlog::logger *logger::operator->()
+    logger::~logger() = default;
+
+    spdlog::logger *logger::operator->() const
     {
-        return m_logger.get();
+        return m_impl->logger.get();
     }
 
     logger &logger::get()
     {
-        if (!m_instance)
+        static std::unique_ptr<logger> instance;
+
+        if (!instance)
         {
-            m_instance = std::unique_ptr<logger>(new logger);
+            instance = std::unique_ptr<logger>(new logger);
         }
 
-        return *m_instance;
+        return *instance;
     }
-} // namespace chalchiu
+} // namespace loader
