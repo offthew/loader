@@ -1,6 +1,6 @@
 {
-  "cmake.configureArgs": [
-    "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/cmake/toolchain.cmake"
-  ],
-  "Lua.diagnostics.globals": ["chalchiu", "globals", "hooks", "detour"]
+  "cmake.environment": {
+    "CMAKE_TOOLCHAIN_FILE": "${workspaceFolder}/cmake/toolchain.cmake",
+    "CMAKE_EXPORT_COMPILE_COMMANDS": "1"
+  }
 }
