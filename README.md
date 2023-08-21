@@ -1,7 +1,7 @@
 <hr>
 
 <div align="center"> 
-    <img src="assets/logo.png" height=312/>
+    <img src="assets/logo.svg" height=312/>
 </div>
 
 <div align="center"> 
