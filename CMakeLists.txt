@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
-project(chalchiu LANGUAGES CXX VERSION 2.3)
+project(loader LANGUAGES CXX VERSION 2.4)
 
 # --------------------------------------------------------------------------------------------------------
 # Setup Cross-Compilation on Linux
 # --------------------------------------------------------------------------------------------------------
 
 if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    message(FATAL_ERROR "[${PROJECT_NAME}] Make sure to instruct cmake to use the toolchain file!")
+    message(FATAL_ERROR "[${PROJECT_NAME}] Make sure to instruct CMake to use the toolchain file!")
 endif()
 
 # --------------------------------------------------------------------------------------------------------
@@ -24,13 +24,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "iphlpapi")
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
 
-if (MINGW)
-    target_link_libraries(${PROJECT_NAME} PRIVATE "-Wl,--enable-stdcall-fixup" -static -static-libgcc -static-libstdc++)
+if (NOT MSVC AND NOT IS_CI)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-missing-field-initializers -Wno-cast-function-type)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
 endif()
 
-if (NOT MSVC AND NOT IS_CI)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-cast-function-type -Wno-missing-field-initializers)
+if (MINGW)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "-Wl,--enable-stdcall-fixup" -static -static-libgcc -static-libstdc++)
 endif()
 
 # --------------------------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ configure_file("constants.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/private/constants
 # --------------------------------------------------------------------------------------------------------
 
 target_include_directories(${PROJECT_NAME} PUBLIC  "include")
-target_include_directories(${PROJECT_NAME} PRIVATE "include/chalchiu" "private")
+target_include_directories(${PROJECT_NAME} PRIVATE "private")
 
 # --------------------------------------------------------------------------------------------------------
 # Link Dependencies and Add Sources
@@ -52,11 +52,25 @@ target_include_directories(${PROJECT_NAME} PRIVATE "include/chalchiu" "private")
 
 include("cmake/cpm.cmake")
 
-find_package(Lua REQUIRED)
+CPMFindPackage(
+  NAME           sol
+  VERSION        3.3.0
+  GIT_REPOSITORY "https://github.com/ThePhD/sol2"
+)
 
-CPMAddPackage("gh:ThePhD/sol2@3.3.0")
-CPMAddPackage("gh:curve/lime#0a5f62f")
-CPMAddPackage("gh:gabime/spdlog@1.11.0")
+CPMFindPackage(
+  NAME           lime
+  VERSION        2.2
+  GIT_REPOSITORY "https://github.com/Curve/lime"
+)
+
+CPMFindPackage(
+  NAME           spdlog
+  VERSION        1.12.0
+  GIT_REPOSITORY "https://github.com/gabime/spdlog"
+)
+
+find_package(Lua 5.1 EXACT REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${LUA_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} PUBLIC sol2 spdlog lime ${LUA_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC spdlog sol2::sol2 cr::lime imagehlp ${LUA_LIBRARIES})
