@@ -59,38 +59,12 @@ void lime::load()
                                               auto state_addr = reinterpret_cast<std::uintptr_t>(state);
                                               logger::get()->debug("lua state is at {0:#x}", state_addr, name);
 
-                                              loader::manager::init(state);
+                                              loader::manager::get().init(state);
                                               delete hook;
                                           }
 
                                           return rtn;
                                       });
-
-    auto get_field = lua->symbol("lua_getfield");
-    using get_field_t = int(lua_State *, int, const char *);
-
-    if (!get_field)
-    {
-        logger::get()->error("couldn't find \"lua_getfield\"");
-        return;
-    }
-
-    lime::hook<get_field_t>::create(get_field,
-                                    [](auto *hook, lua_State *state, int index, const char *name)
-                                    {
-                                        auto rtn = hook->original()(state, index, name);
-
-                                        if (strcmp(name, "shaderPrecision") == 0)
-                                        {
-                                            auto state_addr = reinterpret_cast<std::uintptr_t>(state);
-                                            logger::get()->debug("loading shader precision in {0:#x}", state_addr);
-
-                                            loader::manager::ready();
-                                            delete hook;
-                                        }
-
-                                        return rtn;
-                                    });
 }
 
 void lime::unload()
