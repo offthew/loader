@@ -1,8 +1,8 @@
 #include "manager.hpp"
 
 #include <map>
+#include <mutex>
 #include <functional>
-#include <sol/sol.hpp>
 
 namespace loader
 {
@@ -12,6 +12,9 @@ namespace loader
 
       public:
         std::unique_ptr<sol::state_view> lua;
+
+      public:
+        std::mutex init_mutex;
         std::vector<std::shared_ptr<mod>> mods;
 
       public:
@@ -23,7 +26,13 @@ namespace loader
         std::multimap<std::string, hook_callback> hooks;
 
       public:
+        void setup_panic() const;
+
+      public:
         void setup_hooks();
         void setup_logger();
+
+      public:
+        void load_mods();
     };
 } // namespace loader
