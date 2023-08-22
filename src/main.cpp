@@ -21,7 +21,7 @@ void lime::load()
     }
 
     auto version_string = corona->symbol("CoronaVersionBuildString");
-    using version_string_t = char (*)();
+    using version_string_t = const char *(*)();
 
     if (!version_string)
     {
@@ -29,7 +29,7 @@ void lime::load()
         return;
     }
 
-    const auto version = reinterpret_cast<version_string_t>(version_string)();
+    const auto *version = reinterpret_cast<version_string_t>(version_string)();
     logger::get()->info("running on corona version \"{}\"", version);
 
     auto lua = lime::module::get("lua.dll");
