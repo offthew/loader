@@ -1,11 +1,13 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <vector>
 #include <filesystem>
-#include <sol/sol.hpp>
 
-namespace chalchiu
+namespace loader
 {
+    namespace fs = std::filesystem;
+
     class mod
     {
         struct impl;
@@ -20,15 +22,37 @@ namespace chalchiu
         ~mod();
 
       public:
-        mod(mod &&) noexcept;
+        [[nodiscard]] fs::path path() const;
 
       public:
         [[nodiscard]] std::string name() const;
         [[nodiscard]] std::string author() const;
-        [[nodiscard]] std::string version() const;
-        [[nodiscard]] std::string description() const;
 
       public:
-        static std::unique_ptr<mod> load(const std::filesystem::path &, sol::state_view &);
+        [[nodiscard]] std::string version() const;
+        [[nodiscard]] bool requires_restart() const;
+
+      public:
+        [[nodiscard]] std::string description() const;
+        [[nodiscard]] std::string detailed_description() const;
+
+      public:
+        [[nodiscard]] std::vector<std::string> dependencies() const;
+
+      public:
+        [[nodiscard]] bool enabled() const;
+
+      public:
+        void enable(bool);
+
+      public:
+        void ready();
+        void unload();
+
+      public:
+        void load();
+
+      public:
+        static std::shared_ptr<mod> from(const fs::path &path);
     };
-} // namespace chalchiu
+} // namespace loader

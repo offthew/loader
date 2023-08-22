@@ -70,7 +70,25 @@ CPMFindPackage(
   GIT_REPOSITORY "https://github.com/gabime/spdlog"
 )
 
+CPMFindPackage(
+  NAME           nlohmann_json
+  VERSION        3.11.2
+  GIT_REPOSITORY "https://github.com/nlohmann/json"
+)
+
+CPMFindPackage(
+  NAME           semver
+  VERSION        0.3.0
+  GIT_REPOSITORY "https://github.com/Neargye/semver"
+)
+
+CPMFindPackage(
+  NAME           fmt
+  GIT_TAG        10.1.0
+  GIT_REPOSITORY "https://github.com/fmtlib/fmt"
+)
+
 find_package(Lua 5.1 EXACT REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${LUA_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} PUBLIC spdlog sol2::sol2 cr::lime imagehlp ${LUA_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC spdlog sol2 lime nlohmann_json fmt semver imagehlp ${LUA_LIBRARIES})
