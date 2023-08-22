@@ -1,7 +1,7 @@
 #include "manager.hpp"
 #include "manager.impl.hpp"
 
-#include "logger.hpp"
+#include <ranges>
 
 namespace loader
 {
@@ -9,41 +9,64 @@ namespace loader
 
     manager::~manager() = default;
 
+    sol::state_view *manager::lua() const
+    {
+        return m_impl->lua.get();
+    }
+
     std::vector<std::shared_ptr<mod>> manager::mods() const
     {
         return m_impl->mods;
     }
 
-    void manager::init(lua_State *state)
+    std::vector<std::shared_ptr<mod>> manager::enabled() const
     {
-        if (impl::instance)
-        {
-            return;
-        }
+        using std::views::filter;
+        auto enabled = m_impl->mods | filter([](auto &x) { return x->enabled(); });
 
-        impl::instance = std::unique_ptr<manager>(new manager);
-        impl::instance->m_impl->lua = std::make_unique<sol::state_view>(state);
-
-        auto &lua = *impl::instance->m_impl->lua;
-        impl::instance->m_impl->mod_api = lua.create_named_table("mod_api");
-
-        impl::instance->m_impl->setup_hooks();
-        impl::instance->m_impl->setup_logger();
+        return {enabled.begin(), enabled.end()};
     }
 
     void manager::ready()
     {
-        if (!impl::instance)
+        static bool once = false;
+
+        if (once)
         {
-            logger::get()->critical("ready() called before init!");
             return;
         }
 
-        auto &m_impl = impl::instance->m_impl;
+        std::unique_lock guard{m_impl->init_mutex};
+        once = true;
 
-        for (const auto &mod : m_impl->mods)
+        for (const auto &mod : enabled())
         {
             mod->ready();
         }
+    }
+
+    void manager::init(lua_State *state)
+    {
+        std::unique_lock guard{m_impl->init_mutex};
+
+        m_impl->lua = std::make_unique<sol::state_view>(state);
+        m_impl->mod_api = m_impl->lua->create_named_table("mod_api");
+
+        m_impl->setup_panic();
+
+        m_impl->setup_hooks();
+        m_impl->setup_logger();
+
+        m_impl->load_mods();
+    }
+
+    manager &manager::get()
+    {
+        if (!impl::instance)
+        {
+            impl::instance = std::unique_ptr<manager>(new manager);
+        }
+
+        return *impl::instance;
     }
 } // namespace loader
