@@ -15,6 +15,20 @@ namespace loader
         };
 
         lua->set_panic(sol::c_call<decltype(panic), panic>);
+
+        auto handler = [](lua_State *state, sol::optional<const std::exception &> exception, sol::string_view desc)
+        {
+            logger::get()->critical("exception ocurred: {}", desc);
+
+            if (exception)
+            {
+                logger::get()->critical("what(): {}", exception->what());
+            }
+
+            return sol::stack::push(state, desc);
+        };
+
+        lua->set_exception_handler(handler);
     }
 
     void manager::impl::setup_mods()
