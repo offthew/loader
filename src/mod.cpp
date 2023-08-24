@@ -86,22 +86,23 @@ namespace loader
     void mod::load()
     {
         auto &lua = *manager::get().lua();
-        m_impl->env = {lua, sol::create};
+        m_impl->env = {lua, sol::create, lua.globals()};
 
-        m_impl->mod_api = m_impl->env.create_named("mod_api");
-        m_impl->env["globals"] = lua.globals();
-
-        auto mod_api = lua.get<sol::table>("mod_api");
-
-        for (const auto &[key, value] : mod_api)
-        {
-            m_impl->mod_api[key] = value;
-        }
+        m_impl->mod_api = m_impl->shallow_copy(lua["mod_api"]);
+        m_impl->env["mod_api"] = m_impl->mod_api;
+        m_impl->env["G"] = lua.globals();
 
         m_impl->setup_require();
         m_impl->setup_logger();
 
-        lua.script_file(m_impl->init_path.string(), m_impl->env);
+        auto result = lua.safe_script_file(m_impl->init_path.string(), m_impl->env, sol::script_pass_on_error);
+
+        if (result.valid())
+        {
+            return;
+        }
+
+        logger::get()->error("failed to load \"{}\": {}", name(), result.get<sol::error>().what());
     }
 
     void mod::unload()

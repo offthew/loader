@@ -21,5 +21,8 @@ namespace loader
       public:
         void setup_logger();
         void setup_require();
+
+      public:
+        sol::table shallow_copy(const sol::table &);
     };
 } // namespace loader

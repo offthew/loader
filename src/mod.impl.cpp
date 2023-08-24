@@ -13,10 +13,10 @@ namespace loader
         std::string name = json["name"];
         name = "[" + name + "]";
 
-        auto logger = mod_api.create_named("logger");
-        auto original = (*manager::get().lua())["mod_api"]["logger"];
+        auto &lua = *manager::get().lua();
+        auto original = lua["mod_api"]["logger"];
 
-        logger["logs"] = original["logs"];
+        auto logger = shallow_copy(original);
 
         logger["error"] = [=](const sol::variadic_args &args)
         {
@@ -28,15 +28,7 @@ namespace loader
             original["debug"](name, sol::as_args(args));
         };
 
-        logger["info"] = [=](const sol::variadic_args &args)
-        {
-            original["info"](name, sol::as_args(args));
-        };
-
-        logger["warn"] = [=](const sol::variadic_args &args)
-        {
-            original["warn"](name, sol::as_args(args));
-        };
+        mod_api["logger"] = logger;
     }
 
     void mod::impl::setup_require()
@@ -86,15 +78,29 @@ namespace loader
                 return sol::nil;
             }
 
-            auto result = manager::get().lua()->script_file(target.string(), env);
+            auto result = manager::get().lua()->safe_script_file(target.string(), env, sol::script_pass_on_error);
 
             if (!result.valid())
             {
-                logger::get()->error("loading file (\"{}\") resulted in error", target.string());
+                auto error = result.get<sol::error>();
+                logger::get()->error("loading file (\"{}\") resulted in error: {}", target.string(), error.what());
+
                 return sol::nil;
             }
 
             return result.get<sol::object>();
         };
+    }
+
+    sol::table mod::impl::shallow_copy(const sol::table &table)
+    {
+        auto copy = env.create();
+
+        for (const auto &[key, value] : table.pairs())
+        {
+            copy[key] = value;
+        }
+
+        return copy;
     }
 } // namespace loader
