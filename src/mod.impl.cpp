@@ -45,21 +45,26 @@ namespace loader
                 return require(module.substr(1));
             }
 
+            auto environment = env;
+
             if (module.starts_with("@") && module.find(':') != std::string::npos)
             {
                 auto mod = module.substr(1);
                 mod = mod.substr(0, mod.find_first_of(':'));
 
                 auto enabled = manager::get().enabled();
-                auto target_mod = std::ranges::find_if(enabled, [mod](auto &x) { return x->name() == mod; });
+                auto it = std::ranges::find_if(enabled, [mod](auto &x) { return x->name() == mod; });
 
-                if (target_mod == enabled.end())
+                if (it == enabled.end())
                 {
                     logger::get()->error("requested mod (\"{}\") is not loaded", mod);
                     return sol::nil;
                 }
 
-                root = target_mod->get()->path();
+                auto target = *it;
+
+                root = target->path();
+                environment = target->env();
                 module = module.substr(mod.size() + 2);
             }
 
@@ -78,7 +83,8 @@ namespace loader
                 return sol::nil;
             }
 
-            auto result = manager::get().lua()->safe_script_file(target.string(), env, sol::script_pass_on_error);
+            auto &lua = *manager::get().lua();
+            auto result = lua.safe_script_file(target.string(), environment, sol::script_pass_on_error);
 
             if (!result.valid())
             {

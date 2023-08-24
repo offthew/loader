@@ -2,7 +2,9 @@
 #include <string>
 #include <memory>
 #include <vector>
+
 #include <filesystem>
+#include <sol/sol.hpp>
 
 namespace loader
 {
@@ -38,6 +40,9 @@ namespace loader
 
       public:
         [[nodiscard]] std::vector<std::string> dependencies() const;
+
+      public:
+        [[nodiscard]] sol::environment env() const;
 
       public:
         [[nodiscard]] bool enabled() const;

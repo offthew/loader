@@ -56,6 +56,11 @@ namespace loader
         return m_impl->json.value("dependencies", std::vector<std::string>{});
     }
 
+    sol::environment mod::env() const
+    {
+        return m_impl->env;
+    }
+
     bool mod::enabled() const
     {
         return m_impl->json.value("enabled", true);
@@ -94,6 +99,11 @@ namespace loader
 
         m_impl->setup_require();
         m_impl->setup_logger();
+
+        if (!fs::exists(m_impl->init_path))
+        {
+            return;
+        }
 
         auto result = lua.safe_script_file(m_impl->init_path.string(), m_impl->env, sol::script_pass_on_error);
 
@@ -139,10 +149,9 @@ namespace loader
 
         auto init = path / "init.lua";
 
-        if (!fs::exists(init) || !fs::is_regular_file(init))
+        if (!fs::is_regular_file(init))
         {
-            logger::get()->error("init.lua does not exist in \"{}\"", path.string());
-            return nullptr;
+            logger::get()->debug("init.lua is not a file in \"{}\"", path.string());
         }
 
         auto config = path / "config.json";
