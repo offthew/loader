@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "JSON Schema for a mods config",
+    "description": "Coromon Mod Config",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "author": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string",
+            "$comment": "Version, needs to follow Semantic Versioning 2.0.0"
+        },
+        "description": {
+            "type": "string",
+            "$comment": "Short description of your mod"
+        },
+        "detailed_description": {
+            "type": "string",
+            "$comment": "Long description of your mod (Optional)"
+        },
+        "dependencies": {
+            "type": "array",
+            "uniqueItems": true,
+            "$comment": "The mods dependencies (by name)"
+        },
+        "requires_restart": {
+            "type": "boolean",
+            "$comment": "Is a restart required when (un)-loading the mod?"
+        }
+    },
+    "required": [
+        "name",
+        "author",
+        "version",
+        "description"
+    ]
+}
