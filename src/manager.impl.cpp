@@ -138,9 +138,9 @@ namespace loader
     {
         auto logger = mod_api.create_named("logger");
 
-        lua->new_usertype<log_entry>("log_entry",                                   //
-                                     "message", sol::readonly(&log_entry::message), //
-                                     "level", sol::readonly(&log_entry::level)      //
+        lua->new_usertype<log_entry>("log_entry",                    //
+                                     "message", &log_entry::message, //
+                                     "level", &log_entry::level      //
         );
 
         const auto to_string = [this](const sol::variadic_args &args)
