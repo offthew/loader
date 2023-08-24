@@ -21,15 +21,11 @@ Modding Framework for Coromon
 
 # Introduction
 
-This Project aims to add mod support to [Coromon](https://store.steampowered.com/app/1218210/Coromon/).
+This project allows you to load third-party mods into the game and helps you by supplying useful utilities provided by the [core](https://github.com/CoroModLoader/core).
 
-The [loader](https://github.com/CoroModLoader/loader) allows you to load third-party mods into the game and supplies them with useful utilities provided by the [core](https://github.com/CoroModLoader/core).
+# Installation
 
-# Usage
-
-The installation is fairly simple:
-
-* Locate your Game Folder
+* Locate your game directory
   > e.g. `C:/GOG Games/Coromon/`
 
 * Download the zip file from the latest [Release](https://github.com/CoroModLoader/loader/releases) and unpack all files into the game directory
@@ -46,4 +42,22 @@ The installation is fairly simple:
     ├── lua.dll
     ├── ...
     ```
+
+* When starting the game a `coromodloader.log` should appear in the game directory
+  * > [!WARNING]  
+    > If this does not happen you probably did something wrong.
+
 * Done!
+
+# Un-Installation
+
+* Locate your game directory
+  > e.g. `C:/GOG Games/Coromon/`
+
+* Delete `iphlpapi.dll`
+
+* Done!
+
+# For Developers
+
+Checkout the [wiki](https://github.com/CoroModLoader/loader/wiki) for more information.
