@@ -54,6 +54,7 @@ namespace loader
 
         m_impl->setup_panic();
 
+        m_impl->setup_mods();
         m_impl->setup_hooks();
         m_impl->setup_logger();
 

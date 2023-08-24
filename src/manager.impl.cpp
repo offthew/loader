@@ -17,6 +17,42 @@ namespace loader
         lua->set_panic(sol::c_call<decltype(panic), panic>);
     }
 
+    void manager::impl::setup_mods()
+    {
+        auto dependencies = [](mod &mod)
+        {
+            return sol::as_table(mod.dependencies());
+        };
+
+        lua->new_usertype<mod>("mod",                                              //
+                               "name", &mod::name,                                 //
+                               "author", &mod::author,                             //
+                                                                                   //
+                               "version", &mod::version,                           //
+                               "requires_restart", &mod::requires_restart,         //
+                                                                                   //
+                               "description", &mod::description,                   //
+                               "detailed_description", &mod::detailed_description, //
+                                                                                   //
+                               "dependencies", dependencies,                       //
+                                                                                   //
+                               "enabled", &mod::enabled,                           //
+                               "enable", &mod::enable                              //
+        );
+
+        auto mods = mod_api.create_named("mods");
+
+        mods["all"] = []()
+        {
+            return sol::as_table(manager::get().mods());
+        };
+
+        mods["enabled"] = []()
+        {
+            return sol::as_table(manager::get().enabled());
+        };
+    }
+
     void manager::impl::setup_hooks()
     {
         auto table = mod_api.create_named("hooks");
@@ -106,7 +142,7 @@ namespace loader
 
         logger["logs"] = []()
         {
-            return logger::get().logs();
+            return sol::as_table(logger::get().logs());
         };
 
         logger["error"] = [to_string](const sol::variadic_args &args)

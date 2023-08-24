@@ -29,6 +29,7 @@ namespace loader
         void setup_panic() const;
 
       public:
+        void setup_mods();
         void setup_hooks();
         void setup_logger();
 
