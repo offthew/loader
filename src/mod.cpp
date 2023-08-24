@@ -151,7 +151,8 @@ namespace loader
 
         if (!fs::is_regular_file(init))
         {
-            logger::get()->debug("init.lua is not a file in \"{}\"", path.string());
+            logger::get()->error("init.lua is not a file in \"{}\"", path.string());
+            return nullptr;
         }
 
         auto config = path / "config.json";
