@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "title": "JSON Schema for a mods config",
+    "title": "JSON Schema for a mod config",
     "description": "Coromon Mod Config",
     "type": "object",
     "additionalProperties": false,
