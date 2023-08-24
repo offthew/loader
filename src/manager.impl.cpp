@@ -78,7 +78,14 @@ namespace loader
                 logger::get()->debug("registering hook for \"{}\"", module);
             }
 
-            hooks.emplace(module, callback.as<hook_callback>());
+            auto it = hooks.emplace(module, callback.as<hook_callback>());
+
+            const auto restore = [it, this]()
+            {
+                hooks.erase(it);
+            };
+
+            return std::make_unique<std::function<void()>>(restore);
         };
 
         table["detour"] = [](sol::table table, const std::string &func, sol::function callback)
