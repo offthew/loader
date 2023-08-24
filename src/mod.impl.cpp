@@ -48,7 +48,7 @@ namespace loader
         {
             auto root = config_path.parent_path();
 
-            if (module.starts_with("!"))
+            if (module.starts_with(":"))
             {
                 return require(module.substr(1));
             }

@@ -53,19 +53,24 @@ namespace loader
         auto require = lua->get<std::function<sol::object(const std::string &)>>("require");
         (*lua)["require"] = [this, require](const std::string &module)
         {
-            auto rtn = require(module);
-
             if (module == "classes.battle.rules.onlineShouldBlockSkill")
             {
                 manager::get().ready();
             }
 
+            if (module.starts_with("!"))
+            {
+                return require(module.substr(1));
+            }
+
             if (!hooks.contains(module))
             {
-                return rtn;
+                return require(module);
             }
 
             logger::get()->debug("intercepting \"{}\"", module);
+
+            auto rtn = require(module);
 
             using std::views::filter;
             auto callbacks = hooks | filter([&](const auto &x) { return x.first == module; });
