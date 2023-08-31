@@ -149,7 +149,7 @@ namespace loader
 
         auto init = path / "init.lua";
 
-        if (!fs::is_regular_file(init))
+        if (fs::exists(init) && !fs::is_regular_file(init))
         {
             logger::get()->error("init.lua is not a file in \"{}\"", path.string());
             return nullptr;
