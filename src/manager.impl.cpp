@@ -88,24 +88,19 @@ namespace loader
             return std::make_unique<std::function<void()>>(restore);
         };
 
-        table["detour"] = [](sol::table table, const std::string &func, sol::function callback)
-        {
-            auto original = table.get<sol::function>(func);
+        lua->do_string(R"lua(
+            mod_api.hooks.detour = function(table, func, callback)
+                local original = table[func]
 
-            const auto detour = [=, callback = std::move(callback)](const sol::variadic_args &args)
-            {
-                return callback.call<sol::object>(original, sol::as_args(args));
-            };
+                table[func] = function(...)
+                    return callback(original, ...)
+                end
 
-            const auto restore = [=]() mutable
-            {
-                table[func] = original;
-            };
-
-            table[func] = detour;
-
-            return std::make_unique<std::function<void()>>(restore);
-        };
+                return function()
+                    table[func] = original
+                end
+            end
+        )lua");
 
         auto require = lua->get<std::function<sol::object(const std::string &)>>("require");
         (*lua)["require"] = [this, require](const std::string &module)
